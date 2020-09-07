@@ -9,7 +9,6 @@ case class SokobanGame(
   level: Option[Level] = None,
   moves: Int = 0
 ) {
-
   def applyMove(direction: Direction): SokobanGame = {
     // Only handle games that are actively in play
     if (!state.isInstanceOf[Playing.type]) return this
@@ -20,21 +19,15 @@ case class SokobanGame(
     val level = this.level.get
     val target = level.player + direction
 
-    if (level.isValidPlayerPosition(target) &&
-        level.canMoveBox(target, direction)) {
-
+    if (level.isValidPlayerPosition(target) && level.canMoveBox(target, direction)) {
       val updated = level.moveBox(target, direction)
                          .movePlayer(direction)
 
-      if (updated.isSolved) {
-        return SokobanGame(Won, Some(updated), moves)
-      }
-
-      return SokobanGame(Playing, Some(updated), moves + 1)
+      return if (updated.isSolved) SokobanGame(Won, Some(updated), moves)
+             else SokobanGame(Playing, Some(updated), moves + 1)
     }
 
+    // If the move is not valid, do nothing
     this
   }
-
-  private def containsBox(level: Level, location: Location): Boolean = level.boxes.contains(location)
 }
