@@ -1,7 +1,6 @@
 package dev.vrba.sokobanbot
 
 object Application {
-
   def main(args: Array[String]): Unit = {
     args.headOption match {
       case Some(token) => // Start the application with the provided token
