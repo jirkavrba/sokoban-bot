@@ -13,19 +13,5 @@ object Application {
            | > $ java -jar sokoban-bot.jar [discord token]
            |""".stripMargin)
     }
-
-    val level = LevelParser.parse("""|....WWWWW..........
-                                     |....W...W..........
-                                     |....WB..W..........
-                                     |..WWW..BWW.........
-                                     |..W..B.B.W.........
-                                     |WWW.W.WW.W...WWWWWW
-                                     |W...W.WW.WWWWW..TTW
-                                     |W.B..B..........TTW
-                                     |WWWWW.WWW.WPWW..TTW
-                                     |....W.....WWWWWWWWW
-                                     |....WWWWWWW........""".stripMargin)
-
-    println(level)
   }
 }
