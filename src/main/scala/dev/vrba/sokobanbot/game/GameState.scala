@@ -1,4 +1,4 @@
-package dev.vrba.sokobanbot
+package dev.vrba.sokobanbot.game
 
 sealed trait GameState
 
