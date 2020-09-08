@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.entities.{Activity, Member, Message, MessageEmbed, Us
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
 import scala.io.Source
@@ -25,8 +24,14 @@ class SokobanBot(private val token: String) extends ListenerAdapter {
   // User ID -> Message ID
   private val messages = mutable.Map.empty[Long, Long]
 
-  def run(): Unit = client.addEventListener(this)
+  private val reactions = mutable.LinkedHashMap(
+    "⬅️" -> dev.vrba.sokobanbot.game.util.Left,
+    "⬆️" -> dev.vrba.sokobanbot.game.util.Up,
+    "⬇️" -> dev.vrba.sokobanbot.game.util.Down,
+    "➡️" -> dev.vrba.sokobanbot.game.util.Right,
+  )
 
+  def run(): Unit = client.addEventListener(this)
 
   override def onGuildMessageReceived(event: GuildMessageReceivedEvent): Unit = {
     if (event.getAuthor.isBot) return
@@ -44,33 +49,47 @@ class SokobanBot(private val token: String) extends ListenerAdapter {
         return
       }
 
-      // TODO: Implement this
-      val embed: MessageEmbed = parts.head match {
-        case "start"  => startNewGame(event.getGuild.retrieveMember(event.getAuthor).complete())
+      parts.head match {
+        case "start"  => startNewGame(event)
         case "game"   => SokobanEmbeds.help
         case "cancel" => SokobanEmbeds.help
         case _ => SokobanEmbeds.help
       }
-
-      channel.sendMessage(embed).queue()
     }
   }
 
   override def onGuildMessageReactionAdd(event: GuildMessageReactionAddEvent): Unit = {
     if (event.getUser.isBot) return
 
-    val expected = messages.getOrElse(event.getUser.getIdLong, 0)
+    val member = event.retrieveMember().complete()
+    val expected = messages.getOrElse(member.getIdLong, 0)
+
     if (event.getMessageIdLong != expected) return
 
-    event.getReactionEmote.getEmoji match {
-      // Match emotes to move/reset etc...
-      case _ =>
+    val game = games(member.getIdLong)
+    val message = event.retrieveMessage().complete()
+
+    val reaction = event.getReaction
+    val emoji = reaction.getReactionEmote.getEmoji
+
+    val updated = reactions.get(emoji) match {
+      case Some(direction) => game.applyMove(direction)
+      case None => game // Ignore other reactions
     }
+
+    games(member.getIdLong) = updated
+    message.editMessage(SokobanEmbeds.game(member, updated)).queue()
+    reaction.removeReaction(member.getUser).queue()
+
   }
 
-  private def startNewGame(user: Member): MessageEmbed = {
+  private def startNewGame(event: GuildMessageReceivedEvent): Unit = {
+    val user = event.getGuild.retrieveMember(event.getAuthor).complete()
+    val channel = event.getChannel
+
     if (games.contains(user.getIdLong) && games(user.getIdLong).state == Playing) {
-      return SokobanEmbeds.alreadyInGame
+      channel.sendMessage(SokobanEmbeds.alreadyInGame).queue()
+      return
     }
 
     // TODO: Implement proper level loading
@@ -85,12 +104,14 @@ class SokobanBot(private val token: String) extends ListenerAdapter {
           moves = 0
         )
 
-        SokobanEmbeds.game(user, game)
+        val message = channel.sendMessage(SokobanEmbeds.game(user, game)).complete()
+
+        games.addOne(user.getIdLong -> game)
+        messages.addOne(user.getIdLong -> message.getIdLong)
+        reactions.foreach(reaction => message.addReaction(reaction._1).queue())
 
       // Parsing failed
-      case Left(error) =>
-        LoggerFactory.getLogger(classOf[SokobanBot]).error(error.toString)
-        SokobanEmbeds.error // TODO: Handle parsing errors
+      case Left(error) => channel.sendMessage(SokobanEmbeds.error).queue() // TODO: Handle parsing errors
     }
   }
 }

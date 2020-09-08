@@ -33,7 +33,8 @@ object SokobanEmbeds {
   def game(member: Member, game: SokobanGame): MessageEmbed = base
     .setTitle(member.getEffectiveName + "'s game")
     .setDescription(LevelRenderer.render(game.level.get))
-    .setFooter(s"Played ${game.moves} moves so far")
+    .addField("State", game.state.toString, false)
+    .addField("Moves", game.moves.toString, false)
     .build()
 
 }

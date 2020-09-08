@@ -16,13 +16,11 @@ object LevelRenderer {
     level.tiles
       .map(row => row.map(
         tile => {
-          tile.material match {
+          if (level.player == tile.location) emojis("player")
+          else tile.material match {
             case Wall   => emojis("wall")
-
-            case Air    => if (level.player == tile.location) emojis("player")
-                           else if (level.boxes.contains(tile.location)) emojis("box")
+            case Air    => if (level.boxes.contains(tile.location)) emojis("box")
                            else emojis("air")
-
             case Target => if (level.boxes.contains(tile.location)) emojis("finished_target")
                            else emojis("target")
           }
