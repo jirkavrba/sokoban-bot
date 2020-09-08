@@ -4,7 +4,7 @@ import dev.vrba.sokobanbot.game.util.{Direction, Location}
 
 case class Level(
   tiles: Array[Array[Tile]],
-  boxes: Array[Location],
+  boxes: Set[Location],
   player: Location
 ) {
   def inBounds(location: Location): Boolean =

@@ -1,6 +1,6 @@
 package dev.vrba.sokobanbot
 
-import dev.vrba.sokobanbot.game.level.LevelParser
+import dev.vrba.sokobanbot.game.level.parser.LevelParser
 
 import scala.io.Source
 
