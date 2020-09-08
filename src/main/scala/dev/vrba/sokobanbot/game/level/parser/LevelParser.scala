@@ -41,6 +41,7 @@ object LevelParser {
           boxes += location
         // TODO: There must be some beautiful alternative of this ugly shit
         case 'P' => // Player location was specified more than once!
+          tiles(x)(y) = Tile(location, Air)
           if (playerLocation != null) return Left(DuplicatedPlayerLocation)
           else playerLocation = location
         // The level shouldn't contain anything elese

@@ -1,13 +1,16 @@
 package dev.vrba.sokobanbot.bot
 
-import dev.vrba.sokobanbot.game.SokobanGame
+import dev.vrba.sokobanbot.game.level.parser.LevelParser
+import dev.vrba.sokobanbot.game.{Playing, SokobanGame}
 import net.dv8tion.jda.api.JDABuilder
-import net.dv8tion.jda.api.entities.{Activity, Message, MessageEmbed}
+import net.dv8tion.jda.api.entities.{Activity, Member, Message, MessageEmbed, User}
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
+import scala.io.Source
 
 class SokobanBot(private val token: String) extends ListenerAdapter {
 
@@ -23,6 +26,7 @@ class SokobanBot(private val token: String) extends ListenerAdapter {
   private val messages = mutable.Map.empty[Long, Long]
 
   def run(): Unit = client.addEventListener(this)
+
 
   override def onGuildMessageReceived(event: GuildMessageReceivedEvent): Unit = {
     if (event.getAuthor.isBot) return
@@ -42,9 +46,9 @@ class SokobanBot(private val token: String) extends ListenerAdapter {
 
       // TODO: Implement this
       val embed: MessageEmbed = parts.head match {
-        case "start"  => SokobanEmbeds.help
-        case "game" => SokobanEmbeds.help
-        case "stop" => SokobanEmbeds.help
+        case "start"  => startNewGame(event.getGuild.retrieveMember(event.getAuthor).complete())
+        case "game"   => SokobanEmbeds.help
+        case "cancel" => SokobanEmbeds.help
         case _ => SokobanEmbeds.help
       }
 
@@ -61,6 +65,32 @@ class SokobanBot(private val token: String) extends ListenerAdapter {
     event.getReactionEmote.getEmoji match {
       // Match emotes to move/reset etc...
       case _ =>
+    }
+  }
+
+  private def startNewGame(user: Member): MessageEmbed = {
+    if (games.contains(user.getIdLong) && games(user.getIdLong).state == Playing) {
+      return SokobanEmbeds.alreadyInGame
+    }
+
+    // TODO: Implement proper level loading
+    val source = Source.fromResource("levels/000.level").mkString("")
+
+    LevelParser.parse(source) match {
+      // Everything worked fine
+      case Right(level) =>
+        val game = SokobanGame(
+          state = Playing,
+          level = Some(level),
+          moves = 0
+        )
+
+        SokobanEmbeds.game(user, game)
+
+      // Parsing failed
+      case Left(error) =>
+        LoggerFactory.getLogger(classOf[SokobanBot]).error(error.toString)
+        SokobanEmbeds.error // TODO: Handle parsing errors
     }
   }
 }
