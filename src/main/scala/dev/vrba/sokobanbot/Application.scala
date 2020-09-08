@@ -1,5 +1,9 @@
 package dev.vrba.sokobanbot
 
+import dev.vrba.sokobanbot.game.level.LevelParser
+
+import scala.io.Source
+
 object Application {
   def main(args: Array[String]): Unit = {
     args.headOption match {
@@ -9,5 +13,19 @@ object Application {
            | > $ java -jar sokoban-bot.jar [discord token]
            |""".stripMargin)
     }
+
+    val level = LevelParser.parse("""|....WWWWW..........
+                                     |....W...W..........
+                                     |....WB..W..........
+                                     |..WWW..BWW.........
+                                     |..W..B.B.W.........
+                                     |WWW.W.WW.W...WWWWWW
+                                     |W...W.WW.WWWWW..TTW
+                                     |W.B..B..........TTW
+                                     |WWWWW.WWW.WPWW..TTW
+                                     |....W.....WWWWWWWWW
+                                     |....WWWWWWW........""".stripMargin)
+
+    println(level)
   }
 }

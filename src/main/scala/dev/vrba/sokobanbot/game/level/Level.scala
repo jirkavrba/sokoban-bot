@@ -42,7 +42,7 @@ case class Level(
     this.tiles
       .flatten
       .filter(_.material == Target)
-      .forall(tile => boxes.contains(tile.location == _))
+      .forall(tile => boxes.contains(tile.location))
 }
 
 object Level {
