@@ -15,7 +15,9 @@ class SokobanBot(private val token: String) extends ListenerAdapter {
     .setActivity(Activity.playing("sokoban with Discord users"))
     .build()
 
-  val gamesManager = new GamesManager();
+  val gamesManager = new GamesManager()
+
+  val levelLoader = new LevelLoader()
 
   val reactions: mutable.Map[String, Direction] = mutable.LinkedHashMap(
     "⬅️" -> dev.vrba.sokobanbot.game.util.Left,
