@@ -3,16 +3,11 @@ package dev.vrba.sokobanbot.bot.listeners
 import dev.vrba.sokobanbot.bot.{LevelLoader, SokobanBot}
 import dev.vrba.sokobanbot.bot.util.SokobanEmbeds
 import dev.vrba.sokobanbot.game.{Playing, SokobanGame}
-import dev.vrba.sokobanbot.game.level.parser.LevelParser
-import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.{Message, TextChannel, Member}
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 
-import scala.io.Source
-
 class CommandListener(bot: SokobanBot) extends ListenerAdapter {
-
-  private val levelLoader = new LevelLoader()
 
   override def onGuildMessageReceived(event: GuildMessageReceivedEvent): Unit = {
     if (event.getAuthor.isBot) return
@@ -58,14 +53,12 @@ class CommandListener(bot: SokobanBot) extends ListenerAdapter {
 
     bot.levelLoader.loadLevel(level) match {
       // Everything worked fine
-      case Some(level) =>
+      case Some(level) => {
         val game = SokobanGame(state = Playing, level = Some(level))
-        val message = channel.sendMessage(SokobanEmbeds.game(user, game)).complete
 
         bot.gamesManager.games.addOne(user.getIdLong -> game)
-        bot.gamesManager.messages.addOne(user.getIdLong -> message.getIdLong)
-        bot.reactions.keys.foreach(message.addReaction(_).queue)
-
+        sendGameMessage(game, channel, user)
+      }
       case None => channel.sendMessage(SokobanEmbeds.levelNotFound).queue()
     }
   }
@@ -79,7 +72,7 @@ class CommandListener(bot: SokobanBot) extends ListenerAdapter {
       return
     }
 
-
+    sendGameMessage(bot.gamesManager.games(user.getIdLong), channel, user)
   }
 
   private def listAvailableLevels(event: GuildMessageReceivedEvent): Unit = {
@@ -88,5 +81,16 @@ class CommandListener(bot: SokobanBot) extends ListenerAdapter {
                 else SokobanEmbeds.levelsList(levels)
 
     event.getChannel.sendMessage(embed).queue()
+  }
+
+  private def sendGameMessage(game: SokobanGame, channel: TextChannel, user: Member): Unit = {
+    val message = channel.sendMessage(SokobanEmbeds.game(user, game)).complete
+
+    if (bot.gamesManager.messages.contains(user.getIdLong)) {
+      bot.gamesManager.messages.remove(user.getIdLong)
+    }
+
+    bot.gamesManager.messages.addOne(user.getIdLong -> message.getIdLong)
+    bot.reactions.keys.foreach(message.addReaction(_).queue)
   }
 }
