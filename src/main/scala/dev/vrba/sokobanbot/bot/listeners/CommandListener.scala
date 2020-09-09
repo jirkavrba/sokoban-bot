@@ -32,10 +32,10 @@ class CommandListener(bot: SokobanBot) extends ListenerAdapter {
         .getOrElse("000")
 
       parts.head match {
-        case "start" => startNewGame(event, level)
-        case "game" => switchCurrentMessage(event)
+        case "start"  => startNewGame(event, level)
+        case "game"   => switchCurrentMessage(event)
         case "levels" => listAvailableLevels(event)
-        case "cancel" => SokobanEmbeds.help
+        case "cancel" => cancelGame(event)
         case _ => channel.sendMessage(SokobanEmbeds.help).queue()
       }
     }
@@ -81,6 +81,21 @@ class CommandListener(bot: SokobanBot) extends ListenerAdapter {
                 else SokobanEmbeds.levelsList(levels)
 
     event.getChannel.sendMessage(embed).queue()
+  }
+
+  private def cancelGame(event: GuildMessageReceivedEvent): Unit = {
+    val user = event.getGuild.retrieveMember(event.getAuthor).complete()
+    val channel = event.getChannel
+
+    if (!bot.gamesManager.games.contains(user.getIdLong)) {
+      channel.sendMessage(SokobanEmbeds.notInGame).queue()
+      return
+    }
+
+    bot.gamesManager.games.remove(user.getIdLong)
+    bot.gamesManager.messages.remove(user.getIdLong)
+
+    channel.sendMessage(SokobanEmbeds.gameCancelled).queue()
   }
 
   private def sendGameMessage(game: SokobanGame, channel: TextChannel, user: Member): Unit = {

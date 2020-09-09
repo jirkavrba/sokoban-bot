@@ -45,6 +45,16 @@ object SokobanEmbeds {
     |""".stripMargin)
     .build()
 
+  val gameCancelled: MessageEmbed = new EmbedBuilder()
+    .setColor(Color.GREEN)
+    .setTitle("Game was cancelled")
+    .setDescription(
+      """
+        | To start a new game use `@Sokoban game (level)`
+        | To view a list of levels use `@Sokoban levels`
+        |""".stripMargin)
+    .build()
+
   val error: MessageEmbed = new EmbedBuilder()
     .setColor(Color.RED)
     .setTitle("Something unexpected happened")
