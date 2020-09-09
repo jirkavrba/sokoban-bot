@@ -1,4 +1,4 @@
-package dev.vrba.sokobanbot.bot
+package dev.vrba.sokobanbot.bot.util
 
 import dev.vrba.sokobanbot.game.level.{Air, Level, Target, Wall}
 
@@ -19,8 +19,10 @@ object LevelRenderer {
           if (level.player == tile.location) emojis("player")
           else tile.material match {
             case Wall   => emojis("wall")
+
             case Air    => if (level.boxes.contains(tile.location)) emojis("box")
                            else emojis("air")
+
             case Target => if (level.boxes.contains(tile.location)) emojis("finished_target")
                            else emojis("target")
           }
