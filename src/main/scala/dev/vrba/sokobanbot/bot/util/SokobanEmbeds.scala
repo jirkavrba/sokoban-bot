@@ -40,7 +40,7 @@ object SokobanEmbeds {
     .setTitle("You are not playing a game")
     .setDescription(
   """
-    | To start a new game use `@Sokoban game (level)`
+    | To start a new game use `@Sokoban start (level)`
     | To view a list of levels use `@Sokoban levels`
     |""".stripMargin)
     .build()
@@ -50,7 +50,7 @@ object SokobanEmbeds {
     .setTitle("Game was cancelled")
     .setDescription(
       """
-        | To start a new game use `@Sokoban game (level)`
+        | To start a new game use `@Sokoban start (level)`
         | To view a list of levels use `@Sokoban levels`
         |""".stripMargin)
     .build()
