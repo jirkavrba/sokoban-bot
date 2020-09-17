@@ -1,6 +1,7 @@
 package dev.vrba.sokobanbot.bot
 
-import dev.vrba.sokobanbot.bot.listeners.{CommandListener, ReactionsListener}
+import dev.vrba.sokobanbot.bot.listeners.CommandListener
+import dev.vrba.sokobanbot.bot.listeners.reactions.{EmojiAction, MoveAction, ReactionsListener, UndoAction}
 import dev.vrba.sokobanbot.game.util.Direction
 import net.dv8tion.jda.api.{JDA, JDABuilder}
 import net.dv8tion.jda.api.entities.Activity
@@ -19,11 +20,13 @@ class SokobanBot(private val token: String) extends ListenerAdapter {
 
   val levelLoader = new LevelLoader()
 
-  val reactions: mutable.Map[String, Direction] = mutable.LinkedHashMap(
-    "⬅️" -> dev.vrba.sokobanbot.game.util.Left,
-    "⬆️" -> dev.vrba.sokobanbot.game.util.Up,
-    "⬇️" -> dev.vrba.sokobanbot.game.util.Down,
-    "➡️" -> dev.vrba.sokobanbot.game.util.Right,
+  // Has to be linked hash map to preserve ordering
+  val reactions: mutable.Map[String, EmojiAction] = mutable.LinkedHashMap(
+    "⬅️" -> MoveAction(dev.vrba.sokobanbot.game.util.Left),
+    "⬆️" -> MoveAction(dev.vrba.sokobanbot.game.util.Up),
+    "⬇️" -> MoveAction(dev.vrba.sokobanbot.game.util.Down),
+    "➡️" -> MoveAction(dev.vrba.sokobanbot.game.util.Right),
+    "↩️" -> UndoAction
   )
 
   def start(): Unit = {

@@ -66,6 +66,7 @@ object SokobanEmbeds {
     .setColor(Color.CYAN)
     .setTitle(member.getEffectiveName + "'s game")
     .addField("Moves", game.moves.toString, false)
+    .addField("Available undos", game.lastStates.length.toString, false)
     .addField("How to play",
   """
     | Your goal is to move all boxes to the target places (marked as stars)

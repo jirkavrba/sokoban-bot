@@ -1,4 +1,4 @@
-package dev.vrba.sokobanbot.bot.listeners
+package dev.vrba.sokobanbot.bot.listeners.reactions
 
 import dev.vrba.sokobanbot.bot.SokobanBot
 import dev.vrba.sokobanbot.bot.util.SokobanEmbeds
@@ -23,7 +23,11 @@ class ReactionsListener(bot: SokobanBot) extends ListenerAdapter {
     val emoji = reaction.getReactionEmote.getEmoji
 
     val updated = bot.reactions.get(emoji) match {
-      case Some(direction) => game.get.applyMove(direction)
+      case Some(action) => action match {
+        case MoveAction(direction) => game.get.applyMove(direction)
+        case UndoAction => game.get.undoMove
+        case NoAction => game.get
+      }
       case None => game.get // Ignore other reactions
     }
 
